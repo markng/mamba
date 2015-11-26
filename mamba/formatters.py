@@ -68,7 +68,10 @@ class DocumentationFormatter(Formatter):
         puts('  ' * self._depth(example) + symbol + ' ' + self._format_example_name(example) + self._format_slow_test(example))
 
     def _format_example_name(self, example):
-        return example.name.replace('_', ' ')
+        name = example.name
+        if name[8:10] == '__' and name[:8].isdigit():
+            name = name[10:]
+        return name.replace('_', ' ')
 
     def _format_slow_test(self, example):
         seconds = total_seconds(example.elapsed_time)
@@ -141,9 +144,10 @@ class DocumentationFormatter(Formatter):
         tb = self._traceback(example_)
         filename = inspect.getsourcefile(tb)
 
-        return """{source_line}
+        return """{filename} {source_line}
     {exc_type}: {exc_msg}
         """.format(
+            filename=filename,
             source_line=open(filename).read().splitlines()[tb.tb_lineno-1].strip(),
             exc_type=type(example_.error.exception).__name__,
             exc_msg=str(example_.error.exception)
